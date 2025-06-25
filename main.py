@@ -1,8 +1,8 @@
 import streamlit as st
 from datetime import date
 
-# 테마 정의
-themes = {
+# 기본 테마 목록
+default_themes = {
     "라이트": {
         "bg_color": "#ffffff",
         "text_color": "#000000",
@@ -17,12 +17,19 @@ themes = {
         "bg_color": "#fff0f6",
         "text_color": "#4a0033",
         "accent": "#ff69b4"
-    }
+    },
+    "사용자 정의": {}  # 사용자 정의 색상은 따로 저장됨
 }
 
-# 세션 상태 초기화
+# 세션 초기화
 if "selected_theme" not in st.session_state:
     st.session_state.selected_theme = "라이트"
+if "custom_theme" not in st.session_state:
+    st.session_state.custom_theme = {
+        "bg_color": "#eeeeee",
+        "text_color": "#111111",
+        "accent": "#4CAF50"
+    }
 if "todos" not in st.session_state:
     st.session_state.todos = []
 
@@ -30,13 +37,18 @@ if "todos" not in st.session_state:
 # 🎨 테마 선택 UI
 # ----------------------------
 st.markdown("## 🎨 테마 설정")
-theme_choice = st.selectbox("테마를 선택하세요", list(themes.keys()), index=list(themes.keys()).index(st.session_state.selected_theme))
-if theme_choice != st.session_state.selected_theme:
-    st.session_state.selected_theme = theme_choice
-    st.rerun()
+theme_choice = st.selectbox("테마를 선택하세요", list(default_themes.keys()), index=list(default_themes.keys()).index(st.session_state.selected_theme))
+st.session_state.selected_theme = theme_choice
 
-# 현재 테마 적용
-theme = themes[st.session_state.selected_theme]
+# 사용자 정의 테마 색상 선택
+if theme_choice == "사용자 정의":
+    st.markdown("#### 🎛️ 사용자 정의 색상 선택")
+    st.session_state.custom_theme["bg_color"] = st.color_picker("배경색", st.session_state.custom_theme["bg_color"])
+    st.session_state.custom_theme["text_color"] = st.color_picker("글자색", st.session_state.custom_theme["text_color"])
+    st.session_state.custom_theme["accent"] = st.color_picker("강조색 (버튼 등)", st.session_state.custom_theme["accent"])
+    theme = st.session_state.custom_theme
+else:
+    theme = default_themes[theme_choice]
 
 # ----------------------------
 # 🎨 스타일 적용
