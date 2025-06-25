@@ -21,27 +21,24 @@ themes = {
 }
 
 # 세션 초기화
-if "theme_selected" not in st.session_state:
-    st.session_state.theme_selected = False
 if "selected_theme" not in st.session_state:
-    st.session_state.selected_theme = None
+    st.session_state.selected_theme = "라이트"
 if "todos" not in st.session_state:
     st.session_state.todos = []
 
-# 📌 테마 선택 단계
-if not st.session_state.theme_selected:
-    st.title("🎨 테마를 먼저 선택하세요")
-    theme_choice = st.selectbox("원하는 테마를 선택해주세요", list(themes.keys()))
-    if st.button("테마 적용"):
-        st.session_state.selected_theme = theme_choice
-        st.session_state.theme_selected = True
-        st.rerun()
-    st.stop()
+# ----------------------------
+# 🎨 테마 선택 UI - 화면 상단 표시
+# ----------------------------
+st.markdown("## 🎨 테마 설정")
+theme_choice = st.selectbox("테마를 선택하세요", list(themes.keys()), index=list(themes.keys()).index(st.session_state.selected_theme))
+if theme_choice != st.session_state.selected_theme:
+    st.session_state.selected_theme = theme_choice
+    st.rerun()
 
-# 🎨 테마 적용
+# 현재 테마 적용
 theme = themes[st.session_state.selected_theme]
-st.set_page_config(page_title="할 일 목록", page_icon="📝")
 
+# 테마 스타일 적용
 st.markdown(f"""
     <style>
     .stApp {{
@@ -51,18 +48,20 @@ st.markdown(f"""
     .stButton > button {{
         background-color: {theme['accent']};
         color: white;
-        border: none;
         border-radius: 5px;
         padding: 0.4em 1em;
-        margin-top: 0.5em;
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ 메인 앱 시작
+# ----------------------------
+# ✅ 메인 앱
+# ----------------------------
 st.title("📝 오늘의 할 일 목록")
+
+# 할 일 추가
 with st.form("할 일 추가"):
-    new_task = st.text_input("할 일을 입력하세요", placeholder="예: 운동하기")
+    new_task = st.text_input("할 일을 입력하세요", placeholder="예: 산책하기")
     task_date = st.date_input("기한", value=date.today())
     priority = st.selectbox("우선순위", ["🔴 높음", "🟡 중간", "🟢 낮음"])
     submitted = st.form_submit_button("추가")
@@ -74,12 +73,12 @@ with st.form("할 일 추가"):
             "priority": priority
         })
 
-# 삭제할 항목 추적
+# 할 일 목록 출력
 to_delete = None
-
-st.subheader("📋 할 일 목록")
-
 if st.session_state.todos:
+    st.subheader("📋 할 일 목록")
+
+    # 우선순위 정렬
     priority_order = {"🔴 높음": 0, "🟡 중간": 1, "🟢 낮음": 2}
     sorted_todos = sorted(
         st.session_state.todos,
@@ -102,6 +101,7 @@ if st.session_state.todos:
 else:
     st.info("할 일을 추가해보세요!")
 
+# 전체 삭제 버튼
 if st.session_state.todos:
     if st.button("🗑️ 전체 삭제"):
         st.session_state.todos.clear()
