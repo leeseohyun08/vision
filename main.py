@@ -9,7 +9,7 @@ default_themes = {
     "사용자 정의": {}
 }
 
-# --- 세션 초기화 ---
+# --- 세션 상태 초기화 ---
 if "selected_theme" not in st.session_state:
     st.session_state.selected_theme = "라이트"
 if "custom_theme" not in st.session_state:
@@ -18,6 +18,8 @@ if "custom_theme" not in st.session_state:
     }
 if "todos" not in st.session_state:
     st.session_state.todos = []
+if "edit_index" not in st.session_state:
+    st.session_state.edit_index = None
 
 # --- 테마 선택 ---
 st.markdown("## 🎨 테마 설정")
@@ -68,31 +70,46 @@ with st.form("add_task"):
                 "done": False
             })
 
-# --- 목록 출력 및 수정 ---
+# --- 편집 폼 표시 여부 ---
+edit_index = st.session_state.edit_index
+
+# --- 목록 출력 ---
 st.subheader("📋 할 일 목록")
 priority_order = {"🔴 높음": 0, "🟡 중간": 1, "🟢 낮음": 2}
-sorted_todos = sorted(enumerate(st.session_state.todos), key=lambda x: (x[1]["date"], priority_order[x[1]["priority"]]))
+sorted_todos = sorted(st.session_state.todos, key=lambda x: (x["date"], priority_order[x["priority"]]))
 
 to_delete = None
-for i, todo in sorted_todos:
-    st.markdown("---")
-    st.checkbox("완료", value=todo["done"], key=f"done_{i}", on_change=lambda idx=i: st.session_state.todos[idx].update({"done": not todo["done"]}))
-
-    new_task = st.text_input("할 일", todo["task"], key=f"task_{i}")
-    new_date = st.date_input("기한", todo["date"], key=f"date_{i}")
-    new_priority = st.selectbox("우선순위", ["🔴 높음", "🟡 중간", "🟢 낮음"], index=["🔴 높음", "🟡 중간", "🟢 낮음"].index(todo["priority"]), key=f"prio_{i}")
-
-    cols = st.columns([0.2, 0.2])
-    if cols[0].button("💾 저장", key=f"save_{i}"):
-        st.session_state.todos[i]["task"] = new_task
-        st.session_state.todos[i]["date"] = new_date
-        st.session_state.todos[i]["priority"] = new_priority
-        st.rerun()
-    if cols[1].button("❌ 삭제", key=f"delete_{i}"):
-        to_delete = i
+for i, todo in enumerate(sorted_todos):
+    if edit_index == i:
+        with st.form(f"edit_form_{i}"):
+            new_task = st.text_input("할 일 수정", todo["task"])
+            new_date = st.date_input("기한 수정", todo["date"])
+            new_priority = st.selectbox("우선순위 수정", ["🔴 높음", "🟡 중간", "🟢 낮음"], index=["🔴 높음", "🟡 중간", "🟢 낮음"].index(todo["priority"]))
+            save = st.form_submit_button("저장")
+            cancel = st.form_submit_button("취소")
+            if save:
+                todo["task"] = new_task
+                todo["date"] = new_date
+                todo["priority"] = new_priority
+                st.session_state.edit_index = None
+                st.rerun()
+            elif cancel:
+                st.session_state.edit_index = None
+                st.rerun()
+    else:
+        cols = st.columns([0.05, 0.5, 0.15, 0.1, 0.1, 0.1])
+        todo["done"] = cols[0].checkbox("", value=todo["done"], key=f"done_{i}")
+        task_display = f"~~{todo['task']}~~" if todo["done"] else todo["task"]
+        cols[1].markdown(f"{task_display}  \n📅 {todo['date']}")
+        cols[2].markdown(todo["priority"])
+        if cols[3].button("✏️ 수정", key=f"edit_{i}"):
+            st.session_state.edit_index = i
+            st.rerun()
+        if cols[4].button("❌ 삭제", key=f"del_{i}"):
+            to_delete = i
 
 if to_delete is not None:
-    st.session_state.todos.pop(to_delete)
+    st.session_state.todos.remove(sorted_todos[to_delete])
     st.rerun()
 
 if st.session_state.todos:
