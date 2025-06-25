@@ -31,14 +31,4 @@ if st.session_state.todos:
         cols[1].markdown(task_text)
 
         # 삭제 버튼
-        if cols[2].button("삭제", key=f"delete_{i}"):
-            st.session_state.todos.pop(i)
-            st.experimental_rerun()
-else:
-    st.info("할 일을 추가해보세요!")
-
-# 전체 삭제 버튼
-if st.session_state.todos:
-    if st.button("🗑️ 전체 삭제"):
-        st.session_state.todos.clear()
-        st.experimental_rerun()
+        if cols[2].button("삭제", key=f"d
