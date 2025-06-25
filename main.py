@@ -13,7 +13,10 @@ with st.form(key="add_todo"):
     submitted = st.form_submit_button("추가")
 
     if submitted and new_todo.strip() != "":
-        st.session_state.todos.append({"task": new_todo, "done": False})
+        st.session_state.todos.append({"task": new_todo.strip(), "done": False})
+
+# 삭제 요청 저장용
+to_delete = None
 
 # 할 일 목록 출력
 st.subheader("📋 목록")
@@ -22,13 +25,27 @@ if st.session_state.todos:
     for i, todo in enumerate(st.session_state.todos):
         cols = st.columns([0.1, 0.75, 0.15])
 
-        # 완료 체크박스
+        # 체크박스
         is_done = cols[0].checkbox("", value=todo["done"], key=f"checkbox_{i}")
         st.session_state.todos[i]["done"] = is_done
 
-        # 할 일 텍스트 (완료시 줄긋기)
+        # 줄긋기 처리
         task_text = f"~~{todo['task']}~~" if is_done else todo["task"]
         cols[1].markdown(task_text)
 
         # 삭제 버튼
-        if cols[2].button("삭제", key=f"d
+        if cols[2].button("삭제", key=f"delete_{i}"):
+            to_delete = i
+
+    # 삭제 처리 (반복문 밖에서!)
+    if to_delete is not None:
+        st.session_state.todos.pop(to_delete)
+        st.experimental_set_query_params(_=None)  # rerun을 유도하는 우회적인 방법
+else:
+    st.info("할 일을 추가해보세요!")
+
+# 전체 삭제 버튼
+if st.session_state.todos:
+    if st.button("🗑️ 전체 삭제"):
+        st.session_state.todos.clear()
+        st.experimental_set_query_params(_=None)  # 마찬가지로 상태 초기화 유도
