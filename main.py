@@ -40,7 +40,7 @@ if st.session_state.todos:
     # 삭제 처리 (반복문 밖에서!)
     if to_delete is not None:
         st.session_state.todos.pop(to_delete)
-        st.experimental_set_query_params(_=None)  # rerun을 유도하는 우회적인 방법
+        st.query_params.clear()  # ✅ 최신 방식
 else:
     st.info("할 일을 추가해보세요!")
 
@@ -48,4 +48,4 @@ else:
 if st.session_state.todos:
     if st.button("🗑️ 전체 삭제"):
         st.session_state.todos.clear()
-        st.experimental_set_query_params(_=None)  # 마찬가지로 상태 초기화 유도
+        st.query_params.clear()  # ✅ 최신 방식
