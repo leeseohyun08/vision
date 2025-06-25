@@ -20,14 +20,14 @@ themes = {
     }
 }
 
-# 세션 초기화
+# 세션 상태 초기화
 if "selected_theme" not in st.session_state:
     st.session_state.selected_theme = "라이트"
 if "todos" not in st.session_state:
     st.session_state.todos = []
 
 # ----------------------------
-# 🎨 테마 선택 UI - 화면 상단 표시
+# 🎨 테마 선택 UI
 # ----------------------------
 st.markdown("## 🎨 테마 설정")
 theme_choice = st.selectbox("테마를 선택하세요", list(themes.keys()), index=list(themes.keys()).index(st.session_state.selected_theme))
@@ -38,18 +38,34 @@ if theme_choice != st.session_state.selected_theme:
 # 현재 테마 적용
 theme = themes[st.session_state.selected_theme]
 
-# 테마 스타일 적용
+# ----------------------------
+# 🎨 스타일 적용
+# ----------------------------
 st.markdown(f"""
     <style>
     .stApp {{
         background-color: {theme['bg_color']};
-        color: {theme['text_color']};
+        color: {theme['text_color']} !important;
+    }}
+    .stMarkdown, .stText, .stDataFrame, .stTable, .stAlert {{
+        color: {theme['text_color']} !important;
+    }}
+    div[role="textbox"] *,
+    .stTextInput > div > input,
+    .stSelectbox > div > div,
+    .stDateInput > div > input {{
+        color: {theme['text_color']} !important;
+        background-color: transparent;
     }}
     .stButton > button {{
         background-color: {theme['accent']};
-        color: white;
+        color: white !important;
         border-radius: 5px;
         padding: 0.4em 1em;
+        margin-top: 0.5em;
+    }}
+    label, .css-1cpxqw2 {{
+        color: {theme['text_color']} !important;
     }}
     </style>
 """, unsafe_allow_html=True)
